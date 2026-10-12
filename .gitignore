@@ -1,0 +1,51 @@
+# Compiled C/C++/CUDA Objects and Executables
+*.o
+*.obj
+*.exe
+*.out
+stitch
+stitch.exe
+build/
+bin/
+*.exp
+*.lib
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+venv/
+.venv/
+env/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# IDE & Editor Configs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary Test Files & Output Images
+tools/all/
+tools/in.jpg
+output*.jpg
+output*.png
+output*.ppm
+*.zip
+!Group*_Midterm.zip
+
+# Large Datasets
+dataset/
+raw_photos/
+
+# PDF Documents
+*.pdf
