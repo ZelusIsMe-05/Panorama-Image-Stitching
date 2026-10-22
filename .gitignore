@@ -45,6 +45,8 @@ output*.ppm
 
 # Large Datasets
 dataset/
+datasets/
+datasets_*/
 raw_photos/
 
 # PDF Documents
