@@ -1,5 +1,9 @@
 // ============================================================================
 // stage2_keypoints.cpp - Stage 2 (sequential): Harris + 3x3 NMS + Grid Top-K
+//
+// Author  : Tran Nguyen Tri Thanh (23120356)
+// Sources : algorithm of Harris & Stephens 1988 (see stage2_keypoints.h).
+//           No external code.
 // ============================================================================
 #include "stage2_keypoints.h"
 #include "stage1_preprocess.h"
@@ -93,17 +97,19 @@ void detect_keypoints(const GrayImage& img, const StitchConfig& cfg, std::vector
     kps.clear();
     if (!img.is_valid()) return;
     const int width = img.width, height = img.height;
-    // At least 1 px so that the 3x3 NMS window stays inside the image.
-    const int border = std::max(cfg.keypoint_border, 1);
+    // Keep the complete NMS neighbourhood inside the image. The configured
+    // keypoint border may be larger to leave room for the Stage 3 descriptor.
+    const int nms_radius = std::max(cfg.harris_nms_radius, 1);
+    const int border = std::max(cfg.keypoint_border, nms_radius);
 
     // Steps 1-3: Harris response map.
     std::vector<float> response;
     harris_response_map(img, cfg, response);
 
-    // Step 4: R > alpha * max(R), 3x3 NMS, then Grid Top-K.
+    // Step 4: R > alpha * max(R), configured NMS (3x3 by default), then Grid Top-K.
     const float max_response = max_in_region(response, width, height, border);
     if (max_response <= 0.0f) return;  // flat image: no corner
     const float threshold = std::max(cfg.harris_threshold_ratio, 0.0f) * max_response;
-    collect_local_maxima(response, width, height, border, threshold, std::max(cfg.harris_nms_radius, 1), kps);
+    collect_local_maxima(response, width, height, border, threshold, nms_radius, kps);
     select_grid_top_k(kps, width, height, cfg.grid_cell_size, cfg.grid_top_k);
 }

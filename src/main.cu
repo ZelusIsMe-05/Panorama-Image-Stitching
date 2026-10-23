@@ -127,6 +127,11 @@ int main(int argc, char* argv[]) {
     if (!load_image_rgb(left_path, imgA) || !load_image_rgb(right_path, imgB)) return 1;
 
     StitchConfig config;
+    std::string config_error;
+    if (!validate_stitch_config(config, config_error)) {
+        std::cerr << "[Error] Invalid stitch configuration: " << config_error << "\n";
+        return 1;
+    }
 
     // Warm-up run (not timed): prints the per-stage statistics once
     std::cout << "[Execution] Warm-up run of V" << version << "...\n";

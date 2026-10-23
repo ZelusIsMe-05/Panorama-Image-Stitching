@@ -1,11 +1,17 @@
 // ============================================================================
 // stage2_keypoints.h - Stage 2: Harris corner + 3x3 NMS + Grid-based Top-K
 //
+// Author  : Tran Nguyen Tri Thanh (23120356)
+// Sources : algorithm of C. Harris, M. Stephens, "A combined corner and edge
+//           detector", Alvey Vision Conference 1988, implemented from scratch
+//           (no external code).
+//
 // Data flow (each step is data-parallel, see the notes on each function):
 //   Sobel 3x3 -> Ix^2, Iy^2, IxIy -> Gaussian window -> R map -> max(R)
 //   -> R > alpha * max(R) and 3x3 NMS -> candidates -> Top-K per grid cell
 // Keypoints are ranked by (score desc, y asc, x asc), so the output order is
-// deterministic and a GPU version can reproduce it exactly by sorting.
+// deterministic for a fixed candidate set. CUDA versions must use the same
+// ranking; response values still require an explicit CPU/GPU tolerance check.
 // ============================================================================
 #ifndef STAGE2_KEYPOINTS_H
 #define STAGE2_KEYPOINTS_H
@@ -73,7 +79,8 @@ HOST_DEVICE inline bool keypoint_better(const Keypoint& a, const Keypoint& b) {
 /**
  * Harris response of every pixel: Sobel gradients, products Ix^2, Iy^2, IxIy,
  * Gaussian window (sigma_w, harris_window taps, separable filter of Stage 1),
- * then R. V1: one thread per pixel for each step.
+ * then R. harris_window must be a positive odd number. V1: one thread per
+ * pixel for each step.
  */
 void harris_response_map(const GrayImage& img, const StitchConfig& cfg, std::vector<float>& response);
 
@@ -82,8 +89,10 @@ float max_in_region(const std::vector<float>& map, int width, int height, int bo
 
 /**
  * Candidates: pixels in [border, size - border) whose map value is > threshold
- * and that pass NMS with the given radius. Output in raster order.
- * V1: one thread per pixel + compaction (atomic counter or scan).
+ * and that pass NMS with the given radius. V0 outputs them in raster order.
+ * V1 maps one thread to one pixel and compacts with an atomic counter or scan;
+ * atomic compaction may change candidate order, but Grid Top-K below restores a
+ * canonical final order independent of its input order.
  */
 void collect_local_maxima(const std::vector<float>& map, int width, int height, int border,
                           float threshold, int nms_radius, std::vector<Keypoint>& out);
@@ -92,12 +101,13 @@ void collect_local_maxima(const std::vector<float>& map, int width, int height, 
  * Grid Top-K: keeps the k best keypoints of every cell_size x cell_size cell
  * (k <= 0 keeps all). Written as histogram -> prefix sum -> scatter -> per-cell
  * selection, which map to GPU primitives (atomic histogram, scan, one block per
- * cell). Output is ordered by cell (row-major), best first inside each cell,
- * whatever the input order.
+ * cell). Every input keypoint must lie inside [0, width) x [0, height). Output
+ * is ordered by cell (row-major), best first inside each cell, whatever the
+ * input order.
  */
 void select_grid_top_k(std::vector<Keypoint>& kps, int width, int height, int cell_size, int k);
 
-/** Stage 2 entry point: Harris + 3x3 NMS + Grid Top-K on the Stage 1 output. */
+/** Stage 2 entry point: Harris + configured NMS (3x3 by default) + Grid Top-K. */
 void detect_keypoints(const GrayImage& img, const StitchConfig& cfg, std::vector<Keypoint>& kps);
 
 #endif // STAGE2_KEYPOINTS_H

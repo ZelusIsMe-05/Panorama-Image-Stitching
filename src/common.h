@@ -6,8 +6,10 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 // ----------------------------------------------------------------------------
@@ -139,7 +141,7 @@ struct StitchConfig {
     float harris_threshold_ratio = 0.01f;  // alpha: keep R > alpha * max(R)
     int harris_nms_radius = 1;             // NMS window is (2r+1) x (2r+1), i.e. 3x3
     int grid_cell_size = 32;               // side of a square grid cell in pixels
-    int grid_top_k = 5;                    // K/cell: best keypoints kept per cell (<= 0: keep all)
+    int grid_top_k = 5;                    // K/cell: best keypoints kept per cell (must be > 0 for benchmarks)
     int keypoint_border = 16;              // drop keypoints closer than this to the image edge
                                            // (room for the Stage 3 descriptor patch)
 
@@ -165,6 +167,42 @@ struct StitchConfig {
     // ---- Logging (not an algorithm parameter) ----
     bool verbose = true;                   // print per-stage statistics (keypoints, matches, H)
 };
+
+/** Validates the shared Stage 2/3 configuration before any pipeline version runs. */
+inline bool validate_stitch_config(const StitchConfig& cfg, std::string& error) {
+    auto fail = [&](const char* message) {
+        error = message;
+        return false;
+    };
+
+    if (!std::isfinite(cfg.harris_k) || cfg.harris_k <= 0.0f || cfg.harris_k >= 0.25f)
+        return fail("harris_k must be finite and in (0, 0.25)");
+    if (!std::isfinite(cfg.harris_sigma) || cfg.harris_sigma < 0.0f)
+        return fail("harris_sigma must be finite and non-negative");
+    if (cfg.harris_window <= 0 || cfg.harris_window % 2 == 0)
+        return fail("harris_window must be a positive odd number");
+    if (!std::isfinite(cfg.harris_threshold_ratio) || cfg.harris_threshold_ratio <= 0.0f ||
+        cfg.harris_threshold_ratio >= 1.0f)
+        return fail("harris_threshold_ratio must be finite and in (0, 1)");
+    if (cfg.harris_nms_radius < 1)
+        return fail("harris_nms_radius must be at least 1");
+    if (cfg.grid_cell_size <= 0)
+        return fail("grid_cell_size must be positive");
+    if (cfg.grid_top_k <= 0)
+        return fail("grid_top_k must be positive for the benchmark configuration");
+    if (cfg.orb_patch_size <= 0 || cfg.orb_patch_size % 2 == 0)
+        return fail("orb_patch_size must be a positive odd number");
+    if (cfg.orb_centroid_radius < 0)
+        return fail("orb_centroid_radius must be non-negative");
+
+    const int descriptor_radius = std::max(cfg.orb_patch_size / 2, cfg.orb_centroid_radius);
+    const int required_border = std::max(cfg.harris_nms_radius, descriptor_radius);
+    if (cfg.keypoint_border < required_border)
+        return fail("keypoint_border must cover both the NMS and Stage 3 descriptor radii");
+
+    error.clear();
+    return true;
+}
 
 // ============================================================================
 // Timing
