@@ -206,7 +206,7 @@ bool largest_covered_rect(const uint8_t* mask, int width, int height,
     return best > 0;
 }
 
-bool warp_and_blend(const Image& a, const Image& b, const Homography& h, Image& panorama) {
+bool warp_and_blend(const Image& a, const Image& b, const Homography& h, Image& panorama, bool crop) {
     if (!a.is_valid() || !b.is_valid()) return false;
     Homography h_inv;
     if (!invert_homography(h, h_inv)) return false;
@@ -216,16 +216,19 @@ bool warp_and_blend(const Image& a, const Image& b, const Homography& h, Image& 
     int width = 0, height = 0;
     if (!compute_canvas(a, b, h, view, width, height)) return false;
 
-    // Coverage mask of the whole canvas, then the largest rectangle with no empty pixel.
-    std::vector<uint8_t> mask(static_cast<size_t>(width) * height);
-    for (int y = 0; y < height; ++y)
-        for (int x = 0; x < width; ++x)
-            mask[static_cast<size_t>(y) * width + x] =
-                is_covered(view, h_inv.m, x, y, a.width, a.height, b.width, b.height) ? 1 : 0;
-    int x0 = 0, y0 = 0, crop_width = 0, crop_height = 0;
-    if (!largest_covered_rect(mask.data(), width, height, x0, y0, crop_width, crop_height)) return false;
-    view.origin_x += static_cast<float>(x0);
-    view.origin_y += static_cast<float>(y0);
+    int crop_width = width, crop_height = height;
+    if (crop) {
+        // Coverage mask of the whole canvas, then the largest rectangle with no empty pixel.
+        std::vector<uint8_t> mask(static_cast<size_t>(width) * height);
+        for (int y = 0; y < height; ++y)
+            for (int x = 0; x < width; ++x)
+                mask[static_cast<size_t>(y) * width + x] =
+                    is_covered(view, h_inv.m, x, y, a.width, a.height, b.width, b.height) ? 1 : 0;
+        int x0 = 0, y0 = 0;
+        if (!largest_covered_rect(mask.data(), width, height, x0, y0, crop_width, crop_height)) return false;
+        view.origin_x += static_cast<float>(x0);
+        view.origin_y += static_cast<float>(y0);
+    }
 
     panorama = Image(crop_width, crop_height, 3);
     uint8_t* out = panorama.data.data();

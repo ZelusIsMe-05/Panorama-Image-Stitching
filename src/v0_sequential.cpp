@@ -105,7 +105,7 @@ bool run_v0(
     // Stage 6: Warping & Blending (Inverse Warping + Bilinear + Feathering)
     // ========================================================================
     timer.start();
-    const bool warped = warp_and_blend(imgA, imgB, H, output);
+    const bool warped = warp_and_blend(imgA, imgB, H, output, config.crop_to_covered);
     timings.warp_blend_ms = timer.elapsed_ms();
     if (!warped) {
         std::cerr << "[V0 Error] Warping failed: the homography maps image B to an invalid canvas.\n";

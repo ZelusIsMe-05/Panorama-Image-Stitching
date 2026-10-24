@@ -121,11 +121,12 @@ g++ -O3 -std=c++17 -Isrc -x c++ src/main.cu -x none src/*.cpp -o stitch
 
 ### 6.3. Chạy
 ```bash
-./stitch <left_image> <right_image> <output_image> --version <0|1|2|...> [--runs N]
+./stitch <left_image> <right_image> <output_image> --version <0|1|2|...> [--runs N] [--no-crop]
 ```
 - `<left_image>`: ảnh tham chiếu A; `<right_image>`: ảnh B (được biến dạng vào khung của A).
 - `<output_image>`: định dạng theo đuôi file: `.png`, `.jpg` (quality 95) hoặc `.bmp`.
 - `--runs N`: số lần đo (mặc định 5). Chương trình luôn chạy thêm **1 lần warm-up không tính giờ**, sau đó báo **trung bình và nhỏ nhất** của từng giai đoạn. Thời gian đọc/ghi ảnh không được tính.
+- `--no-crop`: giữ nguyên toàn bộ canvas (pixel không thuộc ảnh nào để màu đen) thay vì crop về hình chữ nhật lớn nhất được phủ kín. Dùng để quan sát hình dạng của hai ảnh sau khi warp. Mặc định có crop.
 
 Ví dụ:
 ```bash
@@ -152,4 +153,4 @@ Chương trình trả về mã lỗi khác 0 nếu không đọc được ảnh,
 
 ### 6.5. Lưu ý
 - **Windows + đường dẫn tiếng Việt có dấu:** bản build MinGW nhận tham số dòng lệnh theo bảng mã ANSI nên đường dẫn tuyệt đối chứa ký tự như `Năm` sẽ không mở được. Hãy chạy từ thư mục dự án với **đường dẫn tương đối** (như ví dụ trên). Colab/Linux không bị ảnh hưởng.
-- Ảnh panorama có viền đen hình thang là bình thường: khi máy xoay lớn giữa hai lần chụp, ảnh B bị kéo giãn khi chiếu lên mặt phẳng của ảnh A.
+- Ảnh panorama không có viền đen: Stage 6 chiếu hai ảnh lên mặt trụ (cạnh trên/dưới của ảnh trở thành đường cong), sau đó chỉ giữ lại hình chữ nhật lớn nhất được phủ kín bởi A hoặc B. Vì vậy kích thước ảnh kết quả phụ thuộc vào homography ước lượng được (thường nhỏ hơn bounding box của hai ảnh), và một dải mỏng ở mép trên/dưới cùng các góc bị cắt đi. Máy xoay càng lớn hoặc càng nghiêng giữa hai lần chụp thì phần bị cắt càng nhiều.

@@ -3,7 +3,7 @@
 //           report per-stage timings, save the panorama.
 //
 // Usage (project spec, Sec. 4.1):
-//   ./stitch <left_image> <right_image> <output_image> --version <0|1|2|...> [--runs N]
+//   ./stitch <left_image> <right_image> <output_image> --version <0|1|2|...> [--runs N] [--no-crop]
 // Timing rules (Sec. 4.2): one warm-up run is not timed, then N timed runs;
 // average and minimum are reported; disk I/O is excluded.
 // ============================================================================
@@ -23,13 +23,14 @@
 
 void print_usage(const char* prog_name) {
     std::cout << "Usage:\n"
-              << "  " << prog_name << " <left_image> <right_image> <output_image> --version <0|1|2|...> [--runs N]\n\n"
+              << "  " << prog_name << " <left_image> <right_image> <output_image> --version <0|1|2|...> [--runs N] [--no-crop]\n\n"
               << "Arguments:\n"
               << "  <left_image>     Path to reference image (Image A)\n"
               << "  <right_image>    Path to secondary image (Image B to be warped)\n"
               << "  <output_image>   Path for saving final panorama image (.png, .jpg or .bmp)\n"
               << "  --version <V>    Pipeline version (0: Sequential CPU, 1: Basic CUDA, ...)\n"
-              << "  --runs <N>       Number of benchmark runs to average (default: 5)\n";
+              << "  --runs <N>       Number of benchmark runs to average (default: 5)\n"
+              << "  --no-crop        Keep the whole canvas (black where no image covers it)\n";
 }
 
 using PipelineFn = bool (*)(const Image&, const Image&, Image&, StageTimings&, const StitchConfig&);
@@ -83,14 +84,17 @@ int main(int argc, char* argv[]) {
     std::string output_path = argv[3];
     int version = -1;
     int runs = 5;
+    bool crop = true;
 
-    // Parse options: --version <V> and optional --runs <N>
+    // Parse options: --version <V>, optional --runs <N> and --no-crop
     for (int i = 4; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--version" && i + 1 < argc) {
             version = std::atoi(argv[++i]);
         } else if (arg == "--runs" && i + 1 < argc) {
             runs = std::max(1, std::atoi(argv[++i]));
+        } else if (arg == "--no-crop") {
+            crop = false;
         } else {
             std::cerr << "[Warning] Unrecognized command line argument: " << arg << "\n";
         }
@@ -127,6 +131,7 @@ int main(int argc, char* argv[]) {
     if (!load_image_rgb(left_path, imgA) || !load_image_rgb(right_path, imgB)) return 1;
 
     StitchConfig config;
+    config.crop_to_covered = crop;
     std::string config_error;
     if (!validate_stitch_config(config, config_error)) {
         std::cerr << "[Error] Invalid stitch configuration: " << config_error << "\n";

@@ -163,6 +163,7 @@ struct StitchConfig {
 
     // ---- Stage 6: Cylindrical inverse warping + bilinear + feathering + crop ----
     // Parameter-free (the focal length is estimated from H).
+    bool crop_to_covered = true;           // crop to the largest rectangle with no black pixel (--no-crop: off)
 
     // ---- Logging (not an algorithm parameter) ----
     bool verbose = true;                   // print per-stage statistics (keypoints, matches, H)

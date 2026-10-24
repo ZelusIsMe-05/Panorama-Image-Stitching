@@ -209,10 +209,12 @@ bool largest_covered_rect(const uint8_t* mask, int width, int height,
                           int& x0, int& y0, int& rect_width, int& rect_height);
 
 /**
- * Stage 6 entry point: warps A and B onto the cylinder, blends them and crops
- * the panorama to the largest rectangle with no empty (black) pixel. Returns
- * false if the canvas cannot be built from h.
+ * Stage 6 entry point: warps A and B onto the cylinder, blends them and, if
+ * crop is true, crops the panorama to the largest rectangle with no empty
+ * (black) pixel; otherwise the whole canvas is kept with black where no image
+ * covers it. Returns false if the canvas cannot be built from h.
  */
-bool warp_and_blend(const Image& a, const Image& b, const Homography& h, Image& panorama);
+bool warp_and_blend(const Image& a, const Image& b, const Homography& h, Image& panorama,
+                    bool crop = true);
 
 #endif // STAGE6_WARP_BLEND_H
