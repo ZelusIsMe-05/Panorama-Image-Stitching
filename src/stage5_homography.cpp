@@ -1,5 +1,8 @@
 // ============================================================================
 // stage5_homography.cpp - Stage 5 (sequential): RANSAC + 4-point DLT + refinement
+//
+// Author  : Nguyen Dang Pha (23120315)
+// Sources : RANSAC + DLT (see stage5_homography.h). No external code.
 // ============================================================================
 #include "stage5_homography.h"
 

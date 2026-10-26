@@ -1,6 +1,9 @@
 // ============================================================================
 // stage6_warp_blend.cpp - Stage 6 (sequential): cylindrical inverse warping +
 //                         bilinear + distance-weighted feathering + crop
+//
+// Author  : Nguyen Dang Pha (23120315)
+// Sources : see stage6_warp_blend.h. No external code.
 // ============================================================================
 #include "stage6_warp_blend.h"
 

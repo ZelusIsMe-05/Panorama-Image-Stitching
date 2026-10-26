@@ -1,6 +1,10 @@
 // ============================================================================
 // stage1_preprocess.h - Stage 1: grayscale conversion + separable Gaussian blur
 //
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : BT.601 luma weights and separable Gaussian filter (standard
+//           formulas). No external code.
+//
 // Each per-pixel helper below computes one output pixel from read-only input,
 // so a V1 kernel maps one thread to one pixel and calls the same helper.
 // ============================================================================

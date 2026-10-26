@@ -1,6 +1,9 @@
 // ============================================================================
 // stage4_matching.cpp - Stage 4 (sequential): brute-force Hamming + ratio test
 //                       + cross-check
+//
+// Author  : Truong Thanh Thuan (23120366)
+// Sources : Lowe ratio test (see stage4_matching.h). No external code.
 // ============================================================================
 #include "stage4_matching.h"
 
@@ -12,7 +15,7 @@ void match_descriptors(const std::vector<Descriptor>& desc_a, const std::vector<
     const int na = static_cast<int>(desc_a.size()), nb = static_cast<int>(desc_b.size());
     if (na == 0 || nb == 0) return;
 
-    // Cross-check needs the nearest neighbour of every B descriptor in A.
+    // Nearest A descriptor of every B descriptor, for the cross-check.
     std::vector<int> nearest_in_a;
     if (cfg.match_cross_check) {
         nearest_in_a.resize(nb);
@@ -22,7 +25,7 @@ void match_descriptors(const std::vector<Descriptor>& desc_a, const std::vector<
         }
     }
 
-    // A -> B: nearest and second nearest, then the two filters.
+    // Two nearest B descriptors of every A descriptor, then ratio test and cross-check.
     for (int i = 0; i < na; ++i) {
         int j, d1, d2;
         nearest_two(desc_a[i], desc_b.data(), nb, j, d1, d2);

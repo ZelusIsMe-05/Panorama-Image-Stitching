@@ -2,6 +2,8 @@
 """
 HEIC -> PNG Conversion Utility for CSC14120 Final Project.
 
+Author: Dang Le Duc Thinh (23120360)
+
 Converts every iPhone .HEIC/.HEIF photo in the dataset folder to .PNG so the images
 can be inspected in any viewer and fed to resize_images.py.
 

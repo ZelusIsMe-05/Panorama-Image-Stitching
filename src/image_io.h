@@ -1,6 +1,9 @@
 // ============================================================================
 // image_io.h - Load / save images from disk (stb_image, stb_image_write)
 //
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : no external code.
+//
 // Disk I/O is excluded from every timing, as required by the project spec.
 // ============================================================================
 #ifndef IMAGE_IO_H

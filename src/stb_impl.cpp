@@ -1,5 +1,10 @@
 // ============================================================================
 // stb_impl.cpp - stb implementation unit + image_io.h functions
+//
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : interfaces from the CSC14120 project starter notebook;
+//           stb_image / stb_image_write by S. Barrett (public domain,
+//           https://github.com/nothings/stb).
 // ============================================================================
 
 // stb is third-party code used unmodified: silence its harmless warnings only.

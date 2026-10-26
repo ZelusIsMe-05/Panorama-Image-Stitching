@@ -2,6 +2,11 @@
 // stage4_matching.h - Stage 4: brute-force Hamming matching + Lowe ratio test
 //                     + cross-check (mutual nearest neighbour)
 //
+// Author  : Truong Thanh Thuan (23120366)
+// Sources : ratio test of D. G. Lowe, "Distinctive Image Features from
+//           Scale-Invariant Keypoints", IJCV 2004, applied to Hamming
+//           distances; implemented from scratch (no external code).
+//
 // Data flow:
 //   for each descriptor of A (independent, one thread per query on the GPU):
 //       scan all of B -> nearest j*, d1, second nearest d2
@@ -19,35 +24,34 @@
 #include <vector>
 
 // ----------------------------------------------------------------------------
-// Per-query building blocks (shared with the CUDA kernels)
+// Per-descriptor helpers
 // ----------------------------------------------------------------------------
 
-/** Number of set bits of a 32-bit word (hardware __popc on the GPU). */
+/** Number of 1 bits in v (__popc on the GPU). */
 HOST_DEVICE inline int popcount32(uint32_t v) {
 #if defined(__CUDA_ARCH__)
     return __popc(v);
 #else
-    v = v - ((v >> 1) & 0x55555555u);                  // pairs
-    v = (v & 0x33333333u) + ((v >> 2) & 0x33333333u);  // nibbles
-    v = (v + (v >> 4)) & 0x0F0F0F0Fu;                  // bytes
-    return static_cast<int>((v * 0x01010101u) >> 24);  // sum of the 4 bytes
+    v = v - ((v >> 1) & 0x55555555u);                  // 2-bit sums
+    v = (v & 0x33333333u) + ((v >> 2) & 0x33333333u);  // 4-bit sums
+    v = (v + (v >> 4)) & 0x0F0F0F0Fu;                  // 8-bit sums
+    return static_cast<int>((v * 0x01010101u) >> 24);  // add the 4 bytes
 #endif
 }
 
-/** Hamming distance d_H(a, b) = popcount(a XOR b), in [0, 256]. */
+/** Hamming distance between two 256-bit descriptors, in [0, 256]. */
 HOST_DEVICE inline int hamming_distance(const Descriptor& a, const Descriptor& b) {
     int d = 0;
     for (int w = 0; w < 8; ++w) d += popcount32(a.bits[w] ^ b.bits[w]);
     return d;
 }
 
-/** Larger than any Hamming distance: "no candidate". */
-constexpr int kNoDistance = 257;
+constexpr int kNoDistance = 257;  // above any Hamming distance
 
 /**
- * Scans the n descriptors of `set` for the query: best_idx = nearest (lowest
- * index on ties), d1 = its distance, d2 = smallest distance among the others
- * (kNoDistance if n < 2). best_idx = -1 if n == 0.
+ * Nearest and second nearest descriptor of query in set[0, n): best_idx is the
+ * nearest (lowest index on ties, -1 if n == 0), d1 its distance, d2 the second
+ * smallest distance (kNoDistance if n < 2).
  */
 HOST_DEVICE inline void nearest_two(const Descriptor& query, const Descriptor* set, int n,
                                     int& best_idx, int& d1, int& d2) {
@@ -66,24 +70,20 @@ HOST_DEVICE inline void nearest_two(const Descriptor& query, const Descriptor* s
     }
 }
 
-/** Lowe ratio test d1 / d2 < rho, written without a division (d2 = 0 always fails). */
+/** Lowe ratio test d1 / d2 < rho without a division; always fails when d2 = 0. */
 HOST_DEVICE inline bool passes_ratio_test(int d1, int d2, float rho) {
     return static_cast<float>(d1) < rho * static_cast<float>(d2);
 }
 
 // ----------------------------------------------------------------------------
-// Sequential implementations (V0)
+// Sequential version (V0)
 // ----------------------------------------------------------------------------
 
-/**
- * Stage 4 entry point: matches every descriptor of A against all descriptors
- * of B. Output ordered by idx_a. V1: one thread per descriptor of A (and one per
- * descriptor of B for the cross-check).
- */
+/** Matches every descriptor of A against all descriptors of B; output sorted by idx_a. */
 void match_descriptors(const std::vector<Descriptor>& desc_a, const std::vector<Descriptor>& desc_b,
                        const StitchConfig& cfg, std::vector<Match>& matches);
 
-/** Converts matches to point pairs (A point, B point), the input of Stage 5. */
+/** Turns matches into (A point, B point) pairs for Stage 5. */
 void matches_to_points(const std::vector<Keypoint>& kps_a, const std::vector<Keypoint>& kps_b,
                        const std::vector<Match>& matches, std::vector<PointMatch>& points);
 

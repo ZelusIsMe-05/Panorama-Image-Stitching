@@ -1,6 +1,9 @@
 // ============================================================================
 // v0_sequential.cpp - Version 0: single-threaded CPU pipeline (baseline)
 //
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : no external code.
+//
 // No multithreading and no hand-written SIMD, so V0 is a fair baseline. Each
 // stage is timed with std::chrono (CpuTimer); Stages 1-3 include both images.
 // ============================================================================

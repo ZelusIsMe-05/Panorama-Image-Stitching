@@ -1,3 +1,10 @@
+// ============================================================================
+// cuda_utils.cuh - CUDA error checks, event timer and device info (V1+)
+//
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : interfaces from the CSC14120 project starter notebook;
+//           no other external code.
+// ============================================================================
 #ifndef CUDA_UTILS_CUH
 #define CUDA_UTILS_CUH
 

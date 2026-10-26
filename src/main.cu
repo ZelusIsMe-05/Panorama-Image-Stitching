@@ -2,6 +2,10 @@
 // main.cu - Command-line driver: load images, run one pipeline version N times,
 //           report per-stage timings, save the panorama.
 //
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : interfaces from the CSC14120 project starter notebook;
+//           no other external code.
+//
 // Usage (project spec, Sec. 4.1):
 //   ./stitch <left_image> <right_image> <output_image> --version <0|1|2|...> [--runs N] [--no-crop]
 // Timing rules (Sec. 4.2): one warm-up run is not timed, then N timed runs;

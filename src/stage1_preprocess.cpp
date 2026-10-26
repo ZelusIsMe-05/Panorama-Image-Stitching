@@ -1,5 +1,8 @@
 // ============================================================================
 // stage1_preprocess.cpp - Stage 1 (sequential): grayscale + separable Gaussian
+//
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : see stage1_preprocess.h. No external code.
 // ============================================================================
 #include "stage1_preprocess.h"
 

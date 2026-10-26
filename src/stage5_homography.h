@@ -1,6 +1,12 @@
 // ============================================================================
 // stage5_homography.h - Stage 5: RANSAC + 4-point DLT + inlier refinement
 //
+// Author  : Nguyen Dang Pha (23120315)
+// Sources : M. A. Fischler, R. C. Bolles, "Random Sample Consensus", CACM
+//           1981; R. I. Hartley, "In Defense of the Eight-Point Algorithm",
+//           TPAMI 1997 (point normalization). Implemented from scratch
+//           (no external code).
+//
 // Data flow:
 //   normalize points -> for each hypothesis i (independent):
 //       sample 4 matches with RNG(seed, i) -> 4-point DLT -> count inliers

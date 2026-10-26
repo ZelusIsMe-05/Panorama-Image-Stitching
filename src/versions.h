@@ -1,3 +1,10 @@
+// ============================================================================
+// versions.h - One pipeline function per version (run_v0, run_v1, ...)
+//
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : interfaces from the CSC14120 project starter notebook;
+//           no other external code.
+// ============================================================================
 #ifndef VERSIONS_H
 #define VERSIONS_H
 

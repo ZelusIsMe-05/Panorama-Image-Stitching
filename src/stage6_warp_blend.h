@@ -2,6 +2,10 @@
 // stage6_warp_blend.h - Stage 6: cylindrical inverse warping + bilinear
 //                       interpolation + distance-weighted feathering + crop
 //
+// Author  : Nguyen Dang Pha (23120315)
+// Sources : M. Brown, D. G. Lowe, IJCV 2007 (cylindrical projection, see
+//           below). Implemented from scratch (no external code).
+//
 // Why a cylinder: H maps B onto the image PLANE of A. When the camera rotates
 // by a large angle, the part of B far from A's center is stretched without
 // bound on that plane. The panorama is therefore drawn on a cylinder around

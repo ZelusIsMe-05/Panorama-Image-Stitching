@@ -1,5 +1,9 @@
 // ============================================================================
 // common.h - Shared data types used by every version of the pipeline (V0, V1...)
+//
+// Author  : Dang Le Duc Thinh (23120360)
+// Sources : interfaces from the CSC14120 project starter notebook;
+//           pcg_hash from M. E. O'Neill, PCG, 2014 (see below).
 // ============================================================================
 #ifndef COMMON_H
 #define COMMON_H

@@ -2,6 +2,8 @@
 """
 Image Preprocessing and Resizing Utility for CSC14120 Final Project.
 
+Author: Dang Le Duc Thinh (23120360)
+
 Features:
 - Validates input file formats (supports .jpg, .jpeg, .png, .bmp, .webp, .tiff, .heic, .heif; rejects .pnm, etc.)
 - Reads iPhone HEIC/HEIF photos via pi-heif (HEIF-only build of pillow-heif)
